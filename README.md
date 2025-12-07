@@ -1,4 +1,4 @@
-# desafio-go-1
+# Desafio 1 Go Expert 
 
 Neste desafio vamos aplicar o que aprendemos sobre webserver http, contextos,
 banco de dados e manipulação de arquivos com Go.
