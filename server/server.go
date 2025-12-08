@@ -2,11 +2,17 @@ package server
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
-	"io"
 	"net/http"
 	"time"
+
+	"github.com/luanorlando/desafio-go-1/database"
 )
+
+type apiResponse struct {
+	USDBRL database.ExchangeRate `json:"USDBRL"`
+}
 
 func FetchDollsExchangeRate() {
 	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
@@ -24,9 +30,16 @@ func FetchDollsExchangeRate() {
 	}
 	defer res.Body.Close()
 
-	bodyBytes, err := io.ReadAll(res.Body)
+	var resp apiResponse
+	err = json.NewDecoder(res.Body).Decode(&resp)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Println(string(bodyBytes))
+
+	exchangeRate := resp.USDBRL
+	err = database.InsertExchangeRate(database.NewExchangeRate(exchangeRate.Name, exchangeRate.Bid))
+	if err != nil {
+		fmt.Println(err)
+		panic(err)
+	}
 }

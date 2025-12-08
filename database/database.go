@@ -8,12 +8,12 @@ import (
 )
 
 type ExchangeRate struct {
-	ID   string
-	Name string
-	Bid  float32
+	ID   string  `json:"id"`
+	Name string  `json:"name"`
+	Bid  float64 `json:"bid,string"`
 }
 
-func NewProduct(name string, price float32) *ExchangeRate {
+func NewExchangeRate(name string, price float64) *ExchangeRate {
 	return &ExchangeRate{
 		ID:   uuid.New().String(),
 		Name: name,
@@ -21,15 +21,15 @@ func NewProduct(name string, price float32) *ExchangeRate {
 	}
 }
 
-func InsertExchangeRate(db *sql.DB, exchangeRate *ExchangeRate) error {
-	db, err := sql.Open("exchangeRate", "root:root@tcp(localhost:3307)/desafio1")
+func InsertExchangeRate(exchangeRate *ExchangeRate) error {
+	db, err := sql.Open("mysql", "root:root@tcp(localhost:3306)/desafio")
 	if err != nil {
 		return err
 	}
 
 	defer db.Close()
 
-	stmt, err := db.Prepare("insert into exchangeRate(id, name, bid) values(?, ?, ?)")
+	stmt, err := db.Prepare("insert into exchangerate(id, name, bid) values(?, ?, ?)")
 	if err != nil {
 		return err
 	}
@@ -38,5 +38,4 @@ func InsertExchangeRate(db *sql.DB, exchangeRate *ExchangeRate) error {
 
 	_, err = stmt.Exec(exchangeRate.ID, exchangeRate.Name, exchangeRate.Bid)
 	return err
-
 }

@@ -11,4 +11,4 @@ func main() {
 	server.FetchDollsExchangeRate()
 }
 
-// CREATE TABLE products (id VARCHAR(255) PRIMARY KEY, name VARCHAR(80), bid DECIMAL(10,2));
+// CREATE TABLE exchangerate (id VARCHAR(255) PRIMARY KEY, name VARCHAR(80), bid DECIMAL(10,2));
