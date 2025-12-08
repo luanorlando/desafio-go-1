@@ -1,6 +1,7 @@
 package server
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -14,8 +15,13 @@ type apiResponse struct {
 	USDBRL database.ExchangeRate `json:"USDBRL"`
 }
 
-func FetchDollsExchangeRate() {
-	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+func RunServer() {
+	http.HandleFunc("/cotacao", handler)
+	http.ListenAndServe(":8080", nil)
+}
+
+func handler(w http.ResponseWriter, r *http.Request) {
+	ctx, cancel := context.WithTimeout(r.Context(), 200*time.Millisecond)
 	defer cancel()
 
 	var url string = "https://economia.awesomeapi.com.br/json/last/USD-BRL"
@@ -37,7 +43,11 @@ func FetchDollsExchangeRate() {
 	}
 
 	exchangeRate := resp.USDBRL
-	err = database.InsertExchangeRate(database.NewExchangeRate(exchangeRate.Name, exchangeRate.Bid))
+	jsonStr := fmt.Sprintf(`{ "cotacao": "%v"}`, exchangeRate.Bid)
+	jsonVar := bytes.NewBuffer([]byte(jsonStr))
+	w.Write(jsonVar.Bytes())
+
+	err = database.InsertExchangeRate(ctx, database.NewExchangeRate(exchangeRate.Name, exchangeRate.Bid))
 	if err != nil {
 		fmt.Println(err)
 		panic(err)
