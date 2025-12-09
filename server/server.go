@@ -1,10 +1,8 @@
 package server
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"time"
 
@@ -27,29 +25,31 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	var url string = "https://economia.awesomeapi.com.br/json/last/USD-BRL"
 	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
-		panic(err)
+		http.Error(w, "Falha ao preparar Request", http.StatusInternalServerError)
 	}
 
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
-		panic(err)
+		http.Error(w, "Erro ao codificar JSON", http.StatusNotFound)
 	}
 	defer res.Body.Close()
 
 	var resp apiResponse
 	err = json.NewDecoder(res.Body).Decode(&resp)
 	if err != nil {
-		panic(err)
+		http.Error(w, "Erro ao Decodificar JSON response", http.StatusInternalServerError)
 	}
 
 	exchangeRate := resp.USDBRL
-	jsonStr := fmt.Sprintf(`{ "cotacao": "%v"}`, exchangeRate.Bid)
-	jsonVar := bytes.NewBuffer([]byte(jsonStr))
-	w.Write(jsonVar.Bytes())
-
 	err = database.InsertExchangeRate(ctx, database.NewExchangeRate(exchangeRate.Name, exchangeRate.Bid))
 	if err != nil {
-		fmt.Println(err)
+		http.Error(w, "Erro ao salvar no banco de dados", http.StatusInternalServerError)
 		panic(err)
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	err = json.NewEncoder(w).Encode(map[string]float64{"cotacao": exchangeRate.Bid})
+	if err != nil {
+		http.Error(w, "Erro ao codificar JSON", http.StatusInternalServerError)
 	}
 }

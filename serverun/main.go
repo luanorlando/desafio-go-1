@@ -5,7 +5,6 @@ import (
 )
 
 func main() {
-	// client.RunClient()
 	server.RunServer()
 }
 
