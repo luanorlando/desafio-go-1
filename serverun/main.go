@@ -7,5 +7,3 @@ import (
 func main() {
 	server.RunServer()
 }
-
-// CREATE TABLE exchangerate (id VARCHAR(255) PRIMARY KEY, name VARCHAR(80), bid DECIMAL(10,2));
